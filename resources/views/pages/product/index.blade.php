@@ -170,36 +170,57 @@
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
 
-    <!-- Toastify -->
-    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <!-- Modal Notifikasi -->
+    <div class="modal fade" id="notifModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content glass-card text-center p-4 border-0 shadow-lg position-relative">
+                <div id="notifIcon" class="notif-icon mb-3"></div>
+                <h5 id="notifTitle" class="fw-bold mb-2"></h5>
+                <p id="notifMessage" class="text-muted mb-3"></p>
+                <div class="progress-container mx-auto">
+                    <div class="progress-bar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
     $(function () {
         const storageUrl = "{{ asset('storage') }}";
         const csrfToken = '{{ csrf_token() }}';
+        const notifModal = new bootstrap.Modal('#notifModal');
 
-        let table = $('#productTable').DataTable({
-            responsive: true,
-            autoWidth: false
-        });
+        // 🟢 Helper: Tampilkan notif modal cantik
+        function showNotif(title, message, type = "success") {
+            const icon = $("#notifIcon");
+            const titleEl = $("#notifTitle");
+            const msgEl = $("#notifMessage");
+            const card = $(".glass-card");
 
-        // 🔔 Helper: tampilkan notifikasi toast
-        function showToast(message, type = "success") {
-            Toastify({
-                text: message,
-                duration: 3000,
-                close: true,
-                gravity: "top",
-                position: "right",
-                backgroundColor: type === "success" 
-                    ? "linear-gradient(to right, #00b09b, #96c93d)"
-                    : "linear-gradient(to right, #ff5f6d, #ffc371)",
-                stopOnFocus: true,
-            }).showToast();
+            let color, emoji;
+            switch (type) {
+                case "success": color = "#16a34a"; emoji = "✅"; break;
+                case "error": color = "#dc2626"; emoji = "❌"; break;
+                default: color = "#2563eb"; emoji = "ℹ️";
+            }
+
+            icon.html(`<div class="icon-circle" style="border-color:${color}; color:${color}">${emoji}</div>`);
+            titleEl.text(title);
+            msgEl.text(message);
+            card.css("border-top", `5px solid ${color}`);
+
+            // Reset progress bar animasi
+            $(".progress-bar").css({ width: "0%", background: color });
+            setTimeout(() => $(".progress-bar").css("width", "100%"), 100);
+
+            notifModal.show();
+
+            // Auto-close setelah 2.5 detik
+            setTimeout(() => notifModal.hide(), 2500);
         }
 
-        // Reset modal ke keadaan awal
+        let table = $('#productTable').DataTable({ responsive: true, autoWidth: false });
+
         function resetProductModal() {
             $('#productForm')[0].reset();
             $('#product_id').val('');
@@ -209,11 +230,10 @@
             $('#name, #price, #description, #stock').prop('disabled', false);
         }
 
-        // Preview multiple images (client-side)
+        // Preview multiple images
         $(document).on('change', '#images', function () {
             $('#preview').html('');
-            const files = [...this.files];
-            files.forEach(file => {
+            [...this.files].forEach(file => {
                 const reader = new FileReader();
                 reader.onload = e => {
                     $('#preview').append(`<div class="img-thumb new"><img src="${e.target.result}"></div>`);
@@ -222,41 +242,38 @@
             });
         });
 
-        // Add product button
+        // Add Product
         $('#btnAdd').on('click', function () {
             resetProductModal();
             $('#modalTitle').text('Add Product');
             $('#productModal').modal('show');
         });
 
-        // Save / Update product
+        // Save / Update
         $('#productForm').on('submit', function (e) {
             e.preventDefault();
-            let id = $('#product_id').val();
-            let url = id ? `/products/${id}` : `/products`;
-            let formData = new FormData(this);
+            const id = $('#product_id').val();
+            const url = id ? `/products/${id}` : `/products`;
+            const formData = new FormData(this);
             if (id) formData.append('_method', 'PUT');
 
             $.ajax({
-                url: url,
-                method: 'POST',
-                data: formData,
+                url, method: 'POST', data: formData,
                 headers: { 'X-CSRF-TOKEN': csrfToken },
-                contentType: false,
-                processData: false,
+                contentType: false, processData: false,
                 success: res => {
                     $('#productModal').modal('hide');
-                    showToast(id ? 'Produk berhasil diperbarui!' : 'Produk berhasil ditambahkan!');
-                    setTimeout(() => location.reload(), 800);
+                    showNotif('Berhasil', id ? 'Produk berhasil diperbarui!' : 'Produk berhasil ditambahkan!', 'success');
+                    setTimeout(() => location.reload(), 1000);
                 },
                 error: err => {
                     console.error(err);
-                    showToast('Terjadi kesalahan saat menyimpan produk.', 'error');
+                    showNotif('Error', 'Gagal menyimpan produk.', 'error');
                 }
             });
         });
 
-        // Show product
+        // Show Product
         $(document).on('click', '.btnShow', function () {
             resetProductModal();
             let id = $(this).data('id');
@@ -271,22 +288,18 @@
                 $('#btnSave').hide();
 
                 $('#preview').html('');
-                if (data.images && data.images.length) {
+                if (data.images?.length) {
                     data.images.forEach(img => {
-                        let imgUrl = `${storageUrl}/${img.image_path}`;
-                        $('#preview').append(`<div class="img-thumb"><img src="${imgUrl}" alt=""></div>`);
+                        $('#preview').append(`<div class="img-thumb"><img src="${storageUrl}/${img.image_path}"></div>`);
                     });
                 } else {
                     $('#preview').html('<div class="text-muted">No images</div>');
                 }
                 $('#productModal').modal('show');
-            }).fail(err => {
-                console.error(err);
-                showToast('Gagal memuat produk.', 'error');
-            });
+            }).fail(() => showNotif('Error', 'Gagal memuat produk.', 'error'));
         });
 
-        // Edit product
+        // Edit Product
         $(document).on('click', '.btnEdit', function () {
             resetProductModal();
             let id = $(this).data('id');
@@ -297,26 +310,20 @@
                 $('#price').val(data.price);
                 $('#description').val(data.description);
                 $('#stock').val(data.stock);
-                $('#images').show();
-                $('#btnSave').show();
 
                 $('#preview').html('');
-                if (data.images && data.images.length) {
+                if (data.images?.length) {
                     data.images.forEach(img => {
-                        let imgUrl = `${storageUrl}/${img.image_path}`;
                         $('#preview').append(`
                             <div class="img-thumb" data-image-id="${img.id}">
-                                <img src="${imgUrl}" alt="">
+                                <img src="${storageUrl}/${img.image_path}">
                                 <button class="btn-remove-image" title="Hapus gambar">&times;</button>
                             </div>
                         `);
                     });
                 }
                 $('#productModal').modal('show');
-            }).fail(err => {
-                console.error(err);
-                showToast('Gagal memuat produk untuk diedit.', 'error');
-            });
+            }).fail(() => showNotif('Error', 'Gagal memuat produk.', 'error'));
         });
 
         // Delete single image
@@ -331,41 +338,34 @@
                 url: `/products/image/${imageId}`,
                 type: 'DELETE',
                 data: { _token: csrfToken },
-                success: function (res) {
+                success: res => {
                     if (res.success) {
                         container.remove();
-                        showToast('Gambar berhasil dihapus!');
-                    } else {
-                        showToast('Gagal menghapus gambar.', 'error');
-                    }
+                        showNotif('Berhasil', 'Gambar berhasil dihapus!', 'success');
+                    } else showNotif('Gagal', 'Tidak dapat menghapus gambar.', 'error');
                 },
-                error: function (err) {
-                    console.error(err);
-                    showToast('Gagal menghapus gambar.', 'error');
-                }
+                error: () => showNotif('Error', 'Gagal menghapus gambar.', 'error')
             });
         });
 
         // Delete product
         $(document).on('click', '.btnDelete', function () {
             if (!confirm('Yakin hapus produk ini?')) return;
-            let id = $(this).data('id');
+            const id = $(this).data('id');
+
             $.ajax({
                 url: `/products/${id}`,
                 type: 'POST',
                 data: { _method: 'DELETE', _token: csrfToken },
                 success: () => {
-                    showToast('Produk berhasil dihapus!');
-                    setTimeout(() => location.reload(), 800);
+                    showNotif('Berhasil', 'Produk berhasil dihapus!', 'success');
+                    setTimeout(() => location.reload(), 1000);
                 },
-                error: err => {
-                    console.error(err);
-                    showToast('Gagal menghapus produk.', 'error');
-                }
+                error: () => showNotif('Error', 'Gagal menghapus produk.', 'error')
             });
         });
 
-        // Add Image (modal)
+        // Add Image
         $(document).on('click', '.btnAddImage', function () {
             $('#add_image_product_id').val($(this).data('id'));
             $('#addImageModal').modal('show');
@@ -385,33 +385,63 @@
                 processData: false,
                 success: () => {
                     $('#addImageModal').modal('hide');
-                    showToast('Gambar berhasil ditambahkan!');
-                    setTimeout(() => location.reload(), 800);
+                    showNotif('Berhasil', 'Gambar berhasil ditambahkan!', 'success');
+                    setTimeout(() => location.reload(), 1000);
                 },
-                error: err => {
-                    console.error(err);
-                    showToast('Upload gambar gagal.', 'error');
-                }
+                error: () => showNotif('Error', 'Upload gambar gagal.', 'error')
             });
         });
 
-        // Re-enable form input when modal closed
         $('#productModal').on('hidden.bs.modal', function () {
             $('#name, #price, #description, #stock').prop('disabled', false);
             $('#images').show().prop('disabled', false);
             $('#btnSave').show();
         });
-
     });
     </script>
 
     <style>
-        .toastify {
-            border-radius: 10px;
-            font-weight: 500;
-            font-size: 14px;
-            padding: 10px 18px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        /* Notif modal style */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            animation: fadeInUp 0.4s ease;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .icon-circle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid;
+            border-radius: 50%;
+            width: 65px;
+            height: 65px;
+            font-size: 2rem;
+            background: white;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            animation: pop 0.3s ease-out;
+        }
+        @keyframes pop {
+            from { transform: scale(0.7); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .progress-container {
+            height: 4px;
+            width: 80%;
+            background: #f1f1f1;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            transition: width 2.5s linear;
         }
     </style>
 @endsection
+
+
