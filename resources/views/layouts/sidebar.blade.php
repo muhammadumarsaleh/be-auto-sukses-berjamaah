@@ -71,6 +71,20 @@
     </a>
 </li>
 
+<li class="nav-item">
+    <a class="nav-link menu-link" href="{{ route('users.index') }}">
+        <i class="ri-shopping-bag-2-line"></i>
+        <span>Mitra</span>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a class="nav-link menu-link" href="{{ route('shop.products') }}">
+        <i class="ri-shopping-bag-2-line"></i>
+        <span>Shop</span>
+    </a>
+</li>
+
 
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarApps" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarApps">

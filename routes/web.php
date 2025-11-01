@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\UserController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -28,5 +29,17 @@ Route::post('/update-password/{id}', [HomeController::class, 'updatePassword'])-
 Route::delete('/products/image/{id}', [ProductController::class, 'destroyImage'])->name('products.image.destroy');
 Route::post('/products/{product}/add-image', [ProductController::class, 'addImage']);
 Route::resource('products', ProductController::class);
+Route::resource('users', UserController::class);
+
+Route::prefix('shop')->name('shop.')->group(function () {
+    Route::get('/products', [App\Http\Controllers\ShopController::class, 'index'])->name('products');
+    Route::get('/product/{id}', [App\Http\Controllers\ShopController::class, 'show'])->name('product.show');
+});
+
+
+Route::post('/cart/add/{id}', function($id) {
+    return response()->json(['success' => true]);
+});
+
 
 Route::get('{any}', [HomeController::class, 'index'])->name('index');
