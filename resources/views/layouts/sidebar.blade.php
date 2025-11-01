@@ -64,6 +64,14 @@
                 </li> <!-- end Dashboard Menu -->
 
 
+<li class="nav-item">
+    <a class="nav-link menu-link" href="{{ route('products.index') }}">
+        <i class="ri-shopping-bag-2-line"></i>
+        <span>Products</span>
+    </a>
+</li>
+
+
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarApps" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarApps">
                         <i class="ri-apps-2-line"></i> <span>@lang('translation.apps')</span>

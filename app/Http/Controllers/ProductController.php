@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\ProductImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -83,12 +84,18 @@ public function destroy(Product $product)
     return response()->json(['success' => true]);
 }
 
-    public function destroyImage($id) {
-        $img = ProductImage::findOrFail($id);
-        \Storage::disk('public')->delete($img->image_path);
-        $img->delete();
-        return response()->json(['success'=>true]);
+public function destroyImage($id)
+{
+    $img = ProductImage::findOrFail($id);
+
+    if (Storage::disk('public')->exists($img->image_path)) {
+        Storage::disk('public')->delete($img->image_path);
     }
+
+    $img->delete();
+
+    return response()->json(['success' => true]);
+}
 
 
 

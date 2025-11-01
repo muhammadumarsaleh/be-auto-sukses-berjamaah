@@ -25,7 +25,7 @@ Route::get('/', [HomeController::class, 'root'])->name('root');
 Route::post('/update-profile/{id}', [HomeController::class, 'updateProfile'])->name('updateProfile');
 Route::post('/update-password/{id}', [HomeController::class, 'updatePassword'])->name('updatePassword');
 
-Route::delete('/product-images/{id}', [ProductController::class, 'destroyImage']);
+Route::delete('/products/image/{id}', [ProductController::class, 'destroyImage'])->name('products.image.destroy');
 Route::post('/products/{product}/add-image', [ProductController::class, 'addImage']);
 Route::resource('products', ProductController::class);
 

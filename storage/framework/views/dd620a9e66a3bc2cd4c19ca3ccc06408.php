@@ -298,28 +298,32 @@
             });
         });
 
-        // Delete single image (delegated)
-        $(document).on('click', '.btn-remove-image', function (e) {
-            e.preventDefault();
-            if (!confirm('Hapus gambar ini?')) return;
+// Delete single image (delegated)
+$(document).on('click', '.btn-remove-image', function (e) {
+    e.preventDefault();
+    if (!confirm('Hapus gambar ini?')) return;
 
-            const container = $(this).closest('.img-thumb');
-            const imageId = container.data('image-id');
+    const container = $(this).closest('.img-thumb');
+    const imageId = container.data('image-id');
 
-            // AJAX delete (uses route /product-images/{id} - see backend note)
-            $.ajax({
-                url: `/product-images/${imageId}`,
-                method: 'POST',
-                data: { _method: 'DELETE', _token: csrfToken },
-                success: function () {
-                    container.remove();
-                },
-                error: function (err) {
-                    console.error(err);
-                    alert('Gagal menghapus gambar.');
-                }
-            });
-        });
+    $.ajax({
+        url: `/products/image/${imageId}`,
+        type: 'DELETE',
+        data: { _token: csrfToken },
+        success: function (res) {
+            if (res.success) {
+                container.remove();
+            } else {
+                alert('Gagal menghapus gambar.');
+            }
+        },
+        error: function (err) {
+            console.error(err);
+            alert('Gagal menghapus gambar.');
+        }
+    });
+});
+
 
         // Delete product
         $(document).on('click', '.btnDelete', function () {
