@@ -7,6 +7,8 @@
     <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.dataTables.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+
 
     <style>
         .table img { width: 55px; height: 55px; object-fit: cover; border-radius: 6px; margin: 2px; }
@@ -168,9 +170,12 @@
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
 
+    <!-- Toastify -->
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+
     <script>
     $(function () {
-        // base storage url (Blade)
         const storageUrl = "{{ asset('storage') }}";
         const csrfToken = '{{ csrf_token() }}';
 
@@ -179,7 +184,22 @@
             autoWidth: false
         });
 
-        // helper: reset modal to default state
+        // 🔔 Helper: tampilkan notifikasi toast
+        function showToast(message, type = "success") {
+            Toastify({
+                text: message,
+                duration: 3000,
+                close: true,
+                gravity: "top",
+                position: "right",
+                backgroundColor: type === "success" 
+                    ? "linear-gradient(to right, #00b09b, #96c93d)"
+                    : "linear-gradient(to right, #ff5f6d, #ffc371)",
+                stopOnFocus: true,
+            }).showToast();
+        }
+
+        // Reset modal ke keadaan awal
         function resetProductModal() {
             $('#productForm')[0].reset();
             $('#product_id').val('');
@@ -189,7 +209,7 @@
             $('#name, #price, #description, #stock').prop('disabled', false);
         }
 
-        // preview multiple images client-side
+        // Preview multiple images (client-side)
         $(document).on('change', '#images', function () {
             $('#preview').html('');
             const files = [...this.files];
@@ -209,7 +229,7 @@
             $('#productModal').modal('show');
         });
 
-        // Save / Update product (AJAX)
+        // Save / Update product
         $('#productForm').on('submit', function (e) {
             e.preventDefault();
             let id = $('#product_id').val();
@@ -226,16 +246,17 @@
                 processData: false,
                 success: res => {
                     $('#productModal').modal('hide');
-                    location.reload();
+                    showToast(id ? 'Produk berhasil diperbarui!' : 'Produk berhasil ditambahkan!');
+                    setTimeout(() => location.reload(), 800);
                 },
                 error: err => {
                     console.error(err);
-                    alert('Terjadi error. Cek console untuk detail.');
+                    showToast('Terjadi kesalahan saat menyimpan produk.', 'error');
                 }
             });
         });
 
-        // Show product (view only)
+        // Show product
         $(document).on('click', '.btnShow', function () {
             resetProductModal();
             let id = $(this).data('id');
@@ -253,19 +274,19 @@
                 if (data.images && data.images.length) {
                     data.images.forEach(img => {
                         let imgUrl = `${storageUrl}/${img.image_path}`;
-                        $('#preview').append(`<div class="img-thumb"><img src="${imgUrl}" alt=""><\/div>`);
+                        $('#preview').append(`<div class="img-thumb"><img src="${imgUrl}" alt=""></div>`);
                     });
                 } else {
                     $('#preview').html('<div class="text-muted">No images</div>');
                 }
                 $('#productModal').modal('show');
-            }).fail(function(err){
+            }).fail(err => {
                 console.error(err);
-                alert('Gagal memuat produk.');
+                showToast('Gagal memuat produk.', 'error');
             });
         });
 
-        // Edit product (show images + delete button)
+        // Edit product
         $(document).on('click', '.btnEdit', function () {
             resetProductModal();
             let id = $(this).data('id');
@@ -292,38 +313,38 @@
                     });
                 }
                 $('#productModal').modal('show');
-            }).fail(function(err){
+            }).fail(err => {
                 console.error(err);
-                alert('Gagal memuat produk.');
+                showToast('Gagal memuat produk untuk diedit.', 'error');
             });
         });
 
-// Delete single image (delegated)
-$(document).on('click', '.btn-remove-image', function (e) {
-    e.preventDefault();
-    if (!confirm('Hapus gambar ini?')) return;
+        // Delete single image
+        $(document).on('click', '.btn-remove-image', function (e) {
+            e.preventDefault();
+            if (!confirm('Hapus gambar ini?')) return;
 
-    const container = $(this).closest('.img-thumb');
-    const imageId = container.data('image-id');
+            const container = $(this).closest('.img-thumb');
+            const imageId = container.data('image-id');
 
-    $.ajax({
-        url: `/products/image/${imageId}`,
-        type: 'DELETE',
-        data: { _token: csrfToken },
-        success: function (res) {
-            if (res.success) {
-                container.remove();
-            } else {
-                alert('Gagal menghapus gambar.');
-            }
-        },
-        error: function (err) {
-            console.error(err);
-            alert('Gagal menghapus gambar.');
-        }
-    });
-});
-
+            $.ajax({
+                url: `/products/image/${imageId}`,
+                type: 'DELETE',
+                data: { _token: csrfToken },
+                success: function (res) {
+                    if (res.success) {
+                        container.remove();
+                        showToast('Gambar berhasil dihapus!');
+                    } else {
+                        showToast('Gagal menghapus gambar.', 'error');
+                    }
+                },
+                error: function (err) {
+                    console.error(err);
+                    showToast('Gagal menghapus gambar.', 'error');
+                }
+            });
+        });
 
         // Delete product
         $(document).on('click', '.btnDelete', function () {
@@ -333,12 +354,18 @@ $(document).on('click', '.btn-remove-image', function (e) {
                 url: `/products/${id}`,
                 type: 'POST',
                 data: { _method: 'DELETE', _token: csrfToken },
-                success: () => location.reload(),
-                error: err => { console.error(err); alert('Failed to delete product.'); }
+                success: () => {
+                    showToast('Produk berhasil dihapus!');
+                    setTimeout(() => location.reload(), 800);
+                },
+                error: err => {
+                    console.error(err);
+                    showToast('Gagal menghapus produk.', 'error');
+                }
             });
         });
 
-        // Add Image modal (existing product)
+        // Add Image (modal)
         $(document).on('click', '.btnAddImage', function () {
             $('#add_image_product_id').val($(this).data('id'));
             $('#addImageModal').modal('show');
@@ -358,16 +385,17 @@ $(document).on('click', '.btn-remove-image', function (e) {
                 processData: false,
                 success: () => {
                     $('#addImageModal').modal('hide');
-                    location.reload();
+                    showToast('Gambar berhasil ditambahkan!');
+                    setTimeout(() => location.reload(), 800);
                 },
                 error: err => {
                     console.error(err);
-                    alert('Upload gambar gagal.');
+                    showToast('Upload gambar gagal.', 'error');
                 }
             });
         });
 
-        // ensure modal inputs are re-enabled when closed (prevent stuck disabled state)
+        // Re-enable form input when modal closed
         $('#productModal').on('hidden.bs.modal', function () {
             $('#name, #price, #description, #stock').prop('disabled', false);
             $('#images').show().prop('disabled', false);
@@ -376,4 +404,14 @@ $(document).on('click', '.btn-remove-image', function (e) {
 
     });
     </script>
+
+    <style>
+        .toastify {
+            border-radius: 10px;
+            font-weight: 500;
+            font-size: 14px;
+            padding: 10px 18px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        }
+    </style>
 @endsection
