@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -12,7 +13,7 @@ class UserController extends Controller
     public function index()
     {
         $users = User::orderBy('id', 'desc')->get();
-        return view('pages.user.index', compact('users'));
+        return view('pages.admin.user.index', compact('users'));
     }
 
     public function store(Request $request)

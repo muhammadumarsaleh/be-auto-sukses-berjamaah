@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Mitra;
 
+use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
@@ -12,14 +13,14 @@ class ShopController extends Controller
     public function index()
     {
         $products = Product::latest()->get();
-        return view('pages.shop.catalog', compact('products'));
+        return view('pages.mitra.shop.catalog', compact('products'));
     }
 
     // 📄 detail produk
     public function show($id)
     {
         $product = Product::findOrFail($id);
-        return view('pages.shop.show', compact('product'));
+        return view('pages.mitra.shop.show', compact('product'));
     }
 
     // 🛒 tambah ke keranjang (pakai session dulu)

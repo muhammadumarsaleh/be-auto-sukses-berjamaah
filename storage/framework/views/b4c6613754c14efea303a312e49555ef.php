@@ -64,26 +64,91 @@
                 </li> <!-- end Dashboard Menu -->
 
 
-<li class="nav-item">
-    <a class="nav-link menu-link" href="<?php echo e(route('products.index')); ?>">
-        <i class="ri-shopping-bag-2-line"></i>
-        <span>Products</span>
-    </a>
-</li>
+<!-- Sidebar Navigation -->
+<ul class="navbar-nav" id="navbar-nav">
 
-<li class="nav-item">
-    <a class="nav-link menu-link" href="<?php echo e(route('users.index')); ?>">
-        <i class="ri-shopping-bag-2-line"></i>
-        <span>Mitra</span>
-    </a>
-</li>
+    
+    <li class="nav-item">
+        <a class="nav-link menu-link" href="<?php echo e(route('admin.dashboard')); ?>">
+            <i class="ri-dashboard-line"></i>
+            <span>Dashboard</span>
+        </a>
+    </li>
 
-<li class="nav-item">
-    <a class="nav-link menu-link" href="<?php echo e(route('shop.products')); ?>">
-        <i class="ri-shopping-bag-2-line"></i>
-        <span>Shop</span>
-    </a>
-</li>
+    
+    <li class="nav-item">
+        <a class="nav-link menu-link" href="<?php echo e(route('admin.products.index')); ?>">
+            <i class="ri-shopping-bag-2-line"></i>
+            <span>Products</span>
+        </a>
+    </li>
+
+    
+    <li class="nav-item">
+        <a class="nav-link menu-link" href="<?php echo e(route('admin.users.index')); ?>">
+            <i class="ri-user-settings-line"></i>
+            <span>Users</span>
+        </a>
+    </li>
+
+    
+    <li class="nav-item">
+        <a class="nav-link menu-link" href="<?php echo e(route('admin.mitra.index')); ?>">
+            <i class="ri-team-line"></i>
+            <span>Management Mitra</span>
+        </a>
+    </li>
+
+    
+    <li class="nav-item">
+        <a class="nav-link menu-link" href="<?php echo e(route('admin.transactions')); ?>">
+            <i class="ri-exchange-dollar-line"></i>
+            <span>Transaksi Mitra</span>
+        </a>
+    </li>
+
+    <li class="menu-title mt-3">Mitra Area</li>
+
+    
+    <li class="nav-item">
+        <a class="nav-link menu-link" href="<?php echo e(route('mitra.dashboard')); ?>">
+            <i class="ri-home-4-line"></i>
+            <span>Dashboard Mitra</span>
+        </a>
+    </li>
+
+    
+    <li class="nav-item">
+        <a class="nav-link menu-link" href="<?php echo e(route('mitra.shop.products')); ?>">
+            <i class="ri-store-2-line"></i>
+            <span>Katalog Produk</span>
+        </a>
+    </li>
+
+    
+    <li class="nav-item">
+        <a class="nav-link menu-link" href="<?php echo e(route('mitra.cart')); ?>">
+            <i class="ri-shopping-cart-line"></i>
+            <span>Keranjang</span>
+        </a>
+    </li>
+
+    
+    <li class="nav-item">
+        <a class="nav-link menu-link" href="<?php echo e(route('mitra.checkout')); ?>">
+            <i class="ri-bank-card-line"></i>
+            <span>Checkout</span>
+        </a>
+    </li>
+
+    
+    <li class="nav-item">
+        <a class="nav-link menu-link" href="<?php echo e(route('mitra.orders')); ?>">
+            <i class="ri-file-list-3-line"></i>
+            <span>Riwayat Order</span>
+        </a>
+    </li>
+
 
 
                 <li class="nav-item">
